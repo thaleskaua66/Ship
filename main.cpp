@@ -2,34 +2,52 @@
 #include "runtime/interpreter.h"
 #include "runtime/environment.h"
 #include <iostream>
+#include <fstream>
+#include <iterator>
 
-int main() {
+int main(int argc, char* argv[]) {
   // Getting the parser and creating an environment for the program
   Parser parser;
-  auto env = std::make_shared<Environment>();
-
-  // some basic vars
-  env->declareVar("null", std::make_shared<NullVal>(), true);
-  env->declareVar("true", std::make_shared<BoolVal>(true), true);
-  env->declareVar("false", std::make_shared<BoolVal>(false), true);
+  auto env = Environment::createGlobal();
 
   // Printing a version cause it looks nice
-  std::cout << "Ship v0.0.1" << std::endl;
-  while(true){
-    std::string input;
+  std::cout << "Ship0.0.2" << std::endl;
+  if(argc < 2){
+    while(true){
+      std::string input;
 
-    std::cout << "> ";
-    std::getline(std::cin, input);
+      std::cout << "> ";
+      std::getline(std::cin, input);
 
-    if(input == "exit"){
-      break;
+      if(input == "exit"){
+        break;
+      }
+
+      auto program = parser.produceAST(input);
+
+      // Yes it's running the program that the user sent
+      auto result = evaluate(program, env);
+      std::cout << result->toString() << '\n' << std::endl;
+    }
+  } else {
+    std::ifstream file;
+
+    file.open(argv[1]);
+    if(!file.is_open()){
+      std::cerr << "Error: Could not open file.";
+      return 1;
     }
 
-    auto program = parser.produceAST(input);
+    // reading file and closing
+    std::string content((std::istreambuf_iterator<char>(file)),
+                         std::istreambuf_iterator<char>());
+    file.close();
 
-    // Yes it's running the program that the user sent
+    auto program = parser.produceAST(content);
+    std::cout << program << std::endl; // Will send the memory address if the program run succesfully
+    // "Why don't you print the ast"? Cause i'm too lazy to create a function for that
     auto result = evaluate(program, env);
-    std::cout << result->toString() << '\n' << std::endl;
+
   }
 
   return 0;

@@ -1,12 +1,15 @@
 #pragma once
 #include <iostream>
+#include <memory>
 #include <string>
+#include <unordered_map>
 
 // Defining the value types hell yeah
 enum class ValueType {
   NULLVAL,
   NUMBER,
   BOOLEAN,
+  OBJECT,
 };
 
 // Polimorphism to all the values (NULLVAL, NUMBER, etc)
@@ -45,5 +48,16 @@ struct BoolVal : RuntimeVal {
 
   std::string toString() const override {
     return std::to_string(value);
+  }
+};
+
+// OBJECTS
+struct ObjectVal : RuntimeVal {
+  std::unordered_map<std::string, std::shared_ptr<RuntimeVal>> properties;
+  
+  ObjectVal() : RuntimeVal(ValueType::OBJECT) {}
+
+  std::string toString() const override {
+    return "[object]";
   }
 };

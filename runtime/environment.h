@@ -7,6 +7,10 @@
 #include <algorithm>
 #include "values.h"
 
+class Environment;
+
+inline void setupScope(std::shared_ptr<Environment>& scope);
+
 class Environment : public std::enable_shared_from_this<Environment> {
   private:
     std::shared_ptr<Environment> parent;
@@ -14,9 +18,7 @@ class Environment : public std::enable_shared_from_this<Environment> {
     std::vector<std::string> constants;
 
   public:
-  Environment() = default;
-
-  explicit Environment(std::shared_ptr<Environment> parentEnv)
+  explicit Environment(std::shared_ptr<Environment> parentEnv = nullptr)
     : parent(std::move(parentEnv)) {}
 
   // Function to declare variables
@@ -67,4 +69,17 @@ class Environment : public std::enable_shared_from_this<Environment> {
 
     return parent->resolve(name);
   }
+
+  static std::shared_ptr<Environment> createGlobal() {
+    auto env = std::make_shared<Environment>();
+    setupScope(env);
+    return env;
+  }
 };
+
+// Setting global scope
+inline void setupScope(std::shared_ptr<Environment>& scope){
+  scope->declareVar("true", std::make_shared<BoolVal>(true), true);
+  scope->declareVar("false", std::make_shared<BoolVal>(false), true);
+  scope->declareVar("null", std::make_shared<NullVal>(), true);
+}

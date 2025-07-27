@@ -67,13 +67,14 @@ class Parser {
     }
 
     std::shared_ptr<Statement> parse_var_declaration(){
-      bool isConstant = advance().type == TokenType::Grrr;
+      // The isConstant is inverted for some reason lol, had to change to "Yarr", hopefully it doesn't fuck with something else :p
+      bool isConstant = advance().type == TokenType::Yarr;
       std::string identifier = expect(TokenType::Identifier, "Expected identifier name following yarr | grrr keywords.").value;
 
       // declaration verifications
       if(at().type == TokenType::Semicolon) {
         advance();
-        if(isConstant) {
+        if(!isConstant) {
           throw std::runtime_error("Must assign value to constant expression.");
         }
 
@@ -88,7 +89,54 @@ class Parser {
     }
 
     std::shared_ptr<Expr> parse_expr(){
-      return parse_additive_expr();
+      return parse_assignment_expr();
+    }
+
+    std::shared_ptr<Expr> parse_assignment_expr(){
+      std::shared_ptr<Expr> left = this->parse_object_expr();
+
+      if(at().type == TokenType::Equals){
+        advance(); // advance past equal;
+        auto value = this->parse_assignment_expr(); // Allow chaining
+        return std::make_shared<AssignmentExpr>(left, value);
+      }
+
+      return left;
+    }
+
+    std::shared_ptr<Expr> parse_object_expr(){
+      if(at().type != TokenType::OpenBracket){
+        return this->parse_additive_expr();
+      }
+
+      advance();
+      std::vector<Property> properties;
+
+      while(this->not_eof() && at().type != TokenType::CloseBracket){
+        auto key = expect(TokenType::Identifier, "Object literal key expected.").value;
+
+        if(at().type == TokenType::Comma){
+          advance();
+          properties.push_back(Property{ key });
+          continue;
+        }
+        else if(at().type == TokenType::CloseBracket){
+          properties.push_back(Property{ key });
+          continue;
+        }
+
+        // { key: value }
+        expect(TokenType::Colon, "Missing colon following identifier in ObjectExpr.");
+        std::shared_ptr<Expr> value = parse_expr();
+        properties.push_back(Property{key, value});
+
+        if(at().type != TokenType::CloseBracket){
+          expect(TokenType::Comma, "Expected comma or closing brace.");
+        }
+      }
+
+      expect(TokenType::CloseBracket, "Object literal missing closing brace.");
+      return std::make_shared<ObjectLiteral>(properties);
     }
 
     std::shared_ptr<Expr> parse_additive_expr(){

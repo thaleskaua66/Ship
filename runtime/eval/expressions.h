@@ -49,3 +49,32 @@ inline std::shared_ptr<RuntimeVal> evaluate_identifier(std::shared_ptr<Identifie
   std::shared_ptr<RuntimeVal> value = env->lookupVar(ident->symbol);
   return value;
 }
+
+inline std::shared_ptr<RuntimeVal> evaluate_objects_expr(std::shared_ptr<ObjectLiteral> obj, std::shared_ptr<Environment> env){
+  auto object = std::make_shared<ObjectVal>();
+
+  for(auto& prop : obj->properties){
+    std::string key = prop.key;
+
+    std::shared_ptr<RuntimeVal> value;
+
+    if(prop.value.has_value()){
+      value = evaluate(prop.value.value(), env);
+    } else {
+      value = env->lookupVar(key);
+    }
+
+    object->properties[key] = value;
+  }
+
+  return object;
+}
+
+// Evaluating assignments
+inline std::shared_ptr<RuntimeVal> evaluate_assignment(std::shared_ptr<AssignmentExpr> node, std::shared_ptr<Environment> env){
+  if(node->assigne->kind() != NodeType::Identifier){
+    throw std::runtime_error("Invalid LHS inside assignment expression.");
+  }
+  std::string varName = std::dynamic_pointer_cast<Identifier>(node->assigne)->symbol;
+  return env->assignVar(varName, evaluate(node->value, env));
+}

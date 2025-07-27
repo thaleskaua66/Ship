@@ -41,6 +41,24 @@ inline std::shared_ptr<RuntimeVal> evaluate(std::shared_ptr<Statement> astNode, 
 
       return evaluate_identifier(ident, environment);
     }
+    // HANDLING OBJECTS
+    case NodeType::ObjectLiteral: {
+      auto obj = std::dynamic_pointer_cast<ObjectLiteral>(astNode);
+      if(!obj){
+        throw std::runtime_error("Error: Node isn't a valid ObjectLiteral.");
+      }
+
+      return evaluate_objects_expr(obj, environment);
+    }
+    // HANDLING ASSIGNMENTS
+    case NodeType::AssignmentExpr: {
+      auto assigne = std::dynamic_pointer_cast<AssignmentExpr>(astNode);
+      if(!assigne) {
+        throw std::runtime_error("Error: Node isn't a valid assignment expression.");
+      }
+
+      return evaluate_assignment(assigne, environment);
+    }
     // HANDLING BINARY EXPRESSIONS (1 + 1)
     case NodeType::BinaryExpr: {
       return evaluate_binary_expr(astNode, environment);

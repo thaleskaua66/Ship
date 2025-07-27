@@ -14,8 +14,10 @@ enum class TokenType {
 
   // Grouping & operators
   Equals,
+  Comma, Colon,
   Semicolon,
-  OpenParen, CloseParen,
+  OpenParen, CloseParen, // ()
+  OpenBracket, CloseBracket, // {}
   BinaryOperator,
   eof, // end of file 
 
@@ -41,11 +43,13 @@ inline std::vector<Token> tokenize(std::string sourceCode){
   for(int i = 0; i < sourceCode.length(); i++) {
     char current = sourceCode[i];
 
-    if(current == ' ' || current == '\n' || current == '\t') continue;
+    if(current == ' ' || current == '\n' || current == '\t' || current == '\r') continue;
 
     switch(current){
       case '(': tokens.push_back({"(", TokenType::OpenParen}); continue;
       case ')': tokens.push_back({")", TokenType::CloseParen}); continue;
+      case '{': tokens.push_back({"{", TokenType::OpenBracket}); continue;
+      case '}': tokens.push_back({"}", TokenType::CloseBracket}); continue;
       case '+':
       case '-':
       case '/':
@@ -55,6 +59,8 @@ inline std::vector<Token> tokenize(std::string sourceCode){
         continue;
       case '=': tokens.push_back({"=", TokenType::Equals}); continue;
       case ';': tokens.push_back({";", TokenType::Semicolon}); continue;
+      case ':': tokens.push_back({":", TokenType::Colon}); continue;
+      case ',': tokens.push_back({",", TokenType::Comma}); continue;
       // HANDLING MULTICHAR TOKENS IN LIGHTNING SPEED
       default:
         if(isdigit(current) || sourceCode[i] == '.'){

@@ -10,12 +10,14 @@ enum class NodeType {
   VarDeclaration,
 
   // EXPRESSIONS
+  AssignmentExpr,
+
+  // LITERALS
+  Property,
+  ObjectLiteral,
   NumericLiteral,
   Identifier,
   BinaryExpr,
-  CallExpr,
-  UnaryExpr,
-  FunctionDeclaration,
 };
 
 struct Statement {
@@ -51,6 +53,20 @@ struct VariableDeclaration : public Statement {
   }
 };
 
+// Assignment Expressions
+// x = 40; after declaration
+struct AssignmentExpr : public Expr {
+  std::shared_ptr<Expr> assigne;
+  std::shared_ptr<Expr> value;
+
+  AssignmentExpr(std::shared_ptr<Expr> ass, std::shared_ptr<Expr> val)
+    : assigne(ass), value(val) {}
+
+  NodeType kind() const override {
+    return NodeType::AssignmentExpr;
+  }
+};
+
 // Getting Binary Expressions
 struct BinaryExpr : public Expr {
   NodeType kind() const override {
@@ -81,3 +97,30 @@ struct NumericLiteral : public Expr {
 
   NumericLiteral(double v) : value(v) {}
 };
+
+struct Property : public Expr {
+  NodeType kind() const override {
+    return NodeType::Property;
+  }
+
+  std::string key;
+  std::optional<std::shared_ptr<Expr>> value;
+
+
+  Property(std::string k, std::optional<std::shared_ptr<Expr>> val)
+  : key(k), value(val) {}
+
+  Property(std::string k)
+  : key(k), value(std::nullopt) {}
+};
+
+struct ObjectLiteral : public Expr {
+  NodeType kind() const override {
+    return NodeType::ObjectLiteral;
+  }
+
+  std::vector<Property> properties;
+
+  ObjectLiteral(std::vector<Property> props) : properties(props) {}
+};
+
