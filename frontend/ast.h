@@ -23,6 +23,7 @@ struct Statement {
   virtual ~Statement() {};
 };
 
+// Getting the body of the program, so we can execute it later on
 struct Program : public Statement {
   std::vector<std::shared_ptr<Statement>> body;
 
@@ -32,12 +33,14 @@ struct Program : public Statement {
 };
 
 struct Expr : public Statement {
-  // Nothing here :p
+  // Nothing here yet :p
 };
 
+// Getting variables
 struct VariableDeclaration : public Statement {
   bool constant;
   std::string identifier;
+  // Optional means that it can be undefined, such as `int x;`
   std::optional<std::shared_ptr<Expr>> value;
 
   VariableDeclaration(bool c, std::string id, std::optional<std::shared_ptr<Expr>> val)
@@ -48,6 +51,7 @@ struct VariableDeclaration : public Statement {
   }
 };
 
+// Getting Binary Expressions
 struct BinaryExpr : public Expr {
   NodeType kind() const override {
     return NodeType::BinaryExpr;
@@ -58,6 +62,7 @@ struct BinaryExpr : public Expr {
   std::string op;
 };
 
+// Getting identifiers
 struct Identifier : public Expr {
   NodeType kind() const override {
     return NodeType::Identifier;
@@ -66,6 +71,7 @@ struct Identifier : public Expr {
   std::string symbol;
 };
 
+// Getting numerals (all of them are double cause double is da goat)
 struct NumericLiteral : public Expr {
   NodeType kind() const override {
     return NodeType::NumericLiteral;

@@ -8,8 +8,6 @@
 #include <stdexcept>
 #include <cmath>
 
-std::shared_ptr<RuntimeVal> evaluate(std::shared_ptr<Statement> astNode, std::shared_ptr<Environment> environment);
-
 // -------- EVALUATING -------
 inline std::shared_ptr<RuntimeVal> evaluate(std::shared_ptr<Statement> astNode, std::shared_ptr<Environment> environment){
   switch(astNode->kind()){
@@ -25,7 +23,6 @@ inline std::shared_ptr<RuntimeVal> evaluate(std::shared_ptr<Statement> astNode, 
 
       return last;
     }
-
     // HANDLING NUMERALS
     case NodeType::NumericLiteral: {
       auto num = std::dynamic_pointer_cast<NumericLiteral>(astNode);
@@ -35,7 +32,6 @@ inline std::shared_ptr<RuntimeVal> evaluate(std::shared_ptr<Statement> astNode, 
 
       return std::make_shared<NumberVal>(num->value);
     }
-
     // HANDLING IDENTIFIERS (var names, etc)
     case NodeType::Identifier: {
       auto ident = std::dynamic_pointer_cast<Identifier>(astNode);
@@ -45,12 +41,11 @@ inline std::shared_ptr<RuntimeVal> evaluate(std::shared_ptr<Statement> astNode, 
 
       return evaluate_identifier(ident, environment);
     }
-
     // HANDLING BINARY EXPRESSIONS (1 + 1)
     case NodeType::BinaryExpr: {
       return evaluate_binary_expr(astNode, environment);
     }
-    // HANDLE STATEMENTS;
+    // HANDLE STATEMENTS
     case NodeType::VarDeclaration: {
       return evaluate_var_declaration(astNode, environment);
     }

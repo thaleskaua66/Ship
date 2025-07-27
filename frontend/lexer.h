@@ -37,66 +37,60 @@ struct Token {
 // --------- tokenizer
 inline std::vector<Token> tokenize(std::string sourceCode){
   std::vector<Token> tokens;
-  size_t i = 0;
 
-  while(i < sourceCode.length()) {
+  for(int i = 0; i < sourceCode.length(); i++) {
     char current = sourceCode[i];
 
-    if(current == ' ' || current == '\n' || current == '\t'){
-      i++;
-      continue;
-    }
+    if(current == ' ' || current == '\n' || current == '\t') continue;
 
-    if(current == '('){
-      tokens.push_back({"(", TokenType::OpenParen});
-      i++;
-      continue;
-    } else if(current == ')'){
-      tokens.push_back({")", TokenType::CloseParen});
-      i++;
-      continue;
-    } else if(current == '+' || current == '-' || current == '*' || current == '/' || current == '%'){
-      tokens.push_back({std::string(1, current), TokenType::BinaryOperator});
-      i++;
-      continue;
-    } else if(current == '='){
-      tokens.push_back({"=", TokenType::Equals});
-      i++;
-      continue;
-    } else if(current == ';') {
-      tokens.push_back({";", TokenType::Semicolon});
-      i++;
-      continue;
-    } else {
-      // Handle multichar tokens :D
-      if(isdigit(current)){
-        std::string number;
-
-        while(i < sourceCode.length() && isdigit(sourceCode[i])){
-          number += sourceCode[i++];
-        }
-        tokens.push_back({number, TokenType::Number});
+    switch(current){
+      case '(': tokens.push_back({"(", TokenType::OpenParen}); continue;
+      case ')': tokens.push_back({")", TokenType::CloseParen}); continue;
+      case '+':
+      case '-':
+      case '/':
+      case '*':
+      case '%':
+        tokens.push_back({std::string(1, current), TokenType::BinaryOperator});
         continue;
+      case '=': tokens.push_back({"=", TokenType::Equals}); continue;
+      case ';': tokens.push_back({";", TokenType::Semicolon}); continue;
+      // HANDLING MULTICHAR TOKENS IN LIGHTNING SPEED
+      default:
+        if(isdigit(current) || sourceCode[i] == '.'){
+          std::string number;
+          bool hasDot;
 
-      } else if(isalpha(current)){
-        std::string identifier;
-
-        while(i < sourceCode.length() && isalpha(sourceCode[i])){
-          identifier += sourceCode[i++];
+          while(i < sourceCode.length() && (isdigit(sourceCode[i]) || (sourceCode[i] == '.' && !hasDot))){
+            if(sourceCode[i] == '.') hasDot = true;
+            number += sourceCode[i++];
+          }
+          i--; // Because of the for loop
+          tokens.push_back({number, TokenType::Number});
+          continue;
         }
-        // check for reserved keywords. YARR!!
-        auto found = keywords.find(identifier);
+        else if(isalpha(current) || current == '_'){
+          std::string identifier;
 
-        if(found != keywords.end()){
-          tokens.push_back({identifier, found->second});
-        } else {
-          tokens.push_back({identifier, TokenType::Identifier});
+          while(i < sourceCode.length() && (isalpha(sourceCode[i]) || sourceCode[i] == '_')){
+            identifier += sourceCode[i++];
+          }
+          i--; // Yes, because of the for loop
+
+          // check for reserved keywords. YARR!!
+          auto found = keywords.find(identifier);
+
+          if(found != keywords.end()){
+            tokens.push_back({identifier, found->second});
+          } else {
+            tokens.push_back({identifier, TokenType::Identifier});
+          }
+          continue;
+
+        } else { // Then it must be an error
+          std::cerr << "Invalid identifier: " << current << std::endl;
+          exit(1);
         }
-        continue;
-      } else {
-        std::cerr << "Invalid identifier: " << current << std::endl;
-        exit(1);
-      }
     }
   }
 

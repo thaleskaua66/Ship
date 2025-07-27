@@ -19,6 +19,7 @@ class Environment : public std::enable_shared_from_this<Environment> {
   explicit Environment(std::shared_ptr<Environment> parentEnv)
     : parent(std::move(parentEnv)) {}
 
+  // Function to declare variables
   std::shared_ptr<RuntimeVal> declareVar(std::string name, std::shared_ptr<RuntimeVal> value, bool constant){
     if(variables.find(name) != variables.end()){
       throw std::runtime_error("Error: Variable already defined: " + name);
@@ -33,6 +34,7 @@ class Environment : public std::enable_shared_from_this<Environment> {
     return value;
   }
 
+  // Function to assign variables
   std::shared_ptr<RuntimeVal> assignVar(std::string name, std::shared_ptr<RuntimeVal> value){
     std::shared_ptr<Environment> env = this->resolve(name);
     
@@ -47,11 +49,13 @@ class Environment : public std::enable_shared_from_this<Environment> {
     return value;
   }
 
+  // Function to look to a var yeah that's what it means for sure
   std::shared_ptr<RuntimeVal> lookupVar(std::string name){
     std::shared_ptr<Environment> env = this->resolve(name);
     return env->variables.at(name);
   }
 
+  // Resolving (i don't fully understand how it works, sorry :p)
   std::shared_ptr<Environment> resolve(std::string name){
     if(variables.find(name) != variables.end()){
       return shared_from_this();

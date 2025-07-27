@@ -3,13 +3,17 @@
 #include "../values.h"
 #include "../../frontend/ast.h"
 #include "../interpreter.h"
+#include <charconv>
 #include <memory>
 #include <stdexcept>
 #include <cmath>
+#include <string>
+#include <functional>
 
+// I have to put it here cause for some reason he doesn't use correctly the evaluate function even after i import it
 std::shared_ptr<RuntimeVal> evaluate(std::shared_ptr<Statement> stmt, std::shared_ptr<Environment> env);
 
-// Evaluating binary expressions
+// ------ Evaluating binary expressions --------
 inline std::shared_ptr<RuntimeVal> evaluate_binary_expr(std::shared_ptr<Statement> binop, std::shared_ptr<Environment> env) {
   auto binExpr = std::dynamic_pointer_cast<BinaryExpr>(binop);
   if(!binExpr) {
@@ -28,6 +32,8 @@ inline std::shared_ptr<RuntimeVal> evaluate_binary_expr(std::shared_ptr<Statemen
   if(!leftVal || !rightVal) throw std::runtime_error("Error: Invalid number values for binary expression.");
   double result;
 
+
+  // TODO: nothing, it's perfect
   if(binExpr->op == "+") result = leftVal + rightVal;
   else if(binExpr->op == "-") result = leftVal - rightVal;
   else if(binExpr->op == "*") result = leftVal * rightVal;

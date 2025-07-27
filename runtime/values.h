@@ -2,12 +2,14 @@
 #include <iostream>
 #include <string>
 
+// Defining the value types hell yeah
 enum class ValueType {
   NULLVAL,
   NUMBER,
   BOOLEAN,
 };
 
+// Polimorphism to all the values (NULLVAL, NUMBER, etc)
 struct RuntimeVal {
   ValueType type;
   RuntimeVal(ValueType t) : type(t) {}
@@ -19,7 +21,6 @@ struct RuntimeVal {
 // NULL
 struct NullVal : RuntimeVal {
   NullVal() : RuntimeVal(ValueType::NULLVAL) {}
-  // NullVal(int v) : RuntimeVal(ValueType::NULLVAL), value(v) {}
 
   std::string toString() const override {
     return "null";
