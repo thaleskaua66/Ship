@@ -1,0 +1,45 @@
+#pragma once
+#include "../environment.h"
+#include "../values.h"
+#include "../../frontend/ast.h"
+#include "../interpreter.h"
+#include <memory>
+#include <stdexcept>
+#include <cmath>
+
+std::shared_ptr<RuntimeVal> evaluate(std::shared_ptr<Statement> stmt, std::shared_ptr<Environment> env);
+
+// Evaluating binary expressions
+inline std::shared_ptr<RuntimeVal> evaluate_binary_expr(std::shared_ptr<Statement> binop, std::shared_ptr<Environment> env) {
+  auto binExpr = std::dynamic_pointer_cast<BinaryExpr>(binop);
+  if(!binExpr) {
+    throw std::runtime_error("Error: Node isn't a valid BinaryExpr.");
+  }
+
+  auto left = evaluate(binExpr->left, env);
+  auto right = evaluate(binExpr->right, env);
+
+  if(left->type != ValueType::NUMBER || right->type != ValueType::NUMBER){
+    throw std::runtime_error("Error: only numbers are supported for binary expressions.");
+  }
+
+  auto leftVal = std::dynamic_pointer_cast<NumberVal>(left)->value;
+  auto rightVal = std::dynamic_pointer_cast<NumberVal>(right)->value;
+  if(!leftVal || !rightVal) throw std::runtime_error("Error: Invalid number values for binary expression.");
+  double result;
+
+  if(binExpr->op == "+") result = leftVal + rightVal;
+  else if(binExpr->op == "-") result = leftVal - rightVal;
+  else if(binExpr->op == "*") result = leftVal * rightVal;
+  else if(binExpr->op == "/") result = leftVal / rightVal;
+  else if(binExpr->op == "%") result = std::fmod(leftVal, rightVal);
+  else throw std::runtime_error("Error: Invalid operator.");
+
+  return std::make_shared<NumberVal>(result);
+}
+
+// Evaluating identifiers
+inline std::shared_ptr<RuntimeVal> evaluate_identifier(std::shared_ptr<Identifier> ident, std::shared_ptr<Environment> env){
+  std::shared_ptr<RuntimeVal> value = env->lookupVar(ident->symbol);
+  return value;
+}
