@@ -79,15 +79,34 @@ inline std::shared_ptr<RuntimeVal> evaluate_call_expr(std::shared_ptr<CallExpr> 
 
   auto fn = evaluate(expr->calle, env);
 
-  if(fn->type != ValueType::NATIVEFUNCTION){
-    throw std::runtime_error("Cannot call value that is not a function.");
-    exit(1);
+  if(fn->type == ValueType::NATIVEFUNCTION){
+    auto fnVal = std::static_pointer_cast<NativeFunctionVal>(fn);
+    auto result = fnVal->call(args, env);
+
+    return result;
+  }
+  if(fn->type == ValueType::FUNCTION){
+    auto func = std::dynamic_pointer_cast<FunctionVal>(fn);
+    std::shared_ptr<Environment> scope = std::make_shared<Environment>(func->declarationEnv);
+
+    // create the variables for the parameters list
+    for(int i = 0; i < func->parameters.size(); i++){
+      // TODO: check the bounds here.
+      // verify arity of function
+      std::string varName = func->parameters[i];
+      scope->declareVar(varName, args[i], false);
+    }
+
+    std::shared_ptr<RuntimeVal> result;
+    for(auto stmt : func->body){
+      result = evaluate(stmt, scope);
+    }
+
+    return result;
   }
 
-  auto fnVal = std::static_pointer_cast<NativeFunctionVal>(fn);
-  auto result = fnVal->call(args, env);
-
-  return result;
+  throw std::runtime_error("Cannot call value that is not a function.");
+  exit(1);
 }
 
 // Evaluating assignments

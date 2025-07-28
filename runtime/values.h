@@ -5,6 +5,7 @@
 #include <string>
 #include <unordered_map>
 #include <vector>
+#include "../frontend/ast.h" // to get statements
 
 
 // Because can't include environment.h
@@ -18,6 +19,7 @@ enum class ValueType {
   STRING,
   OBJECT,
   NATIVEFUNCTION,
+  FUNCTION,
 };
 
 // Polimorphism to all the values (NULLVAL, NUMBER, etc)
@@ -95,5 +97,19 @@ struct NativeFunctionVal : RuntimeVal {
     
   std::string toString() const override {
     return "native-fn";
+  }
+};
+
+struct FunctionVal : RuntimeVal {
+  std::string name;
+  std::vector<std::string> parameters;
+  std::shared_ptr<Environment> declarationEnv;
+  std::vector<std::shared_ptr<Statement>> body;
+
+  FunctionVal(std::string nm, std::vector<std::string> params, std::shared_ptr<Environment> scope, std::vector<std::shared_ptr<Statement>> bd)
+    : RuntimeVal(ValueType::FUNCTION), name(nm), parameters(params), declarationEnv(scope), body(bd) {}
+    
+  std::string toString() const override {
+    return "function";
   }
 };

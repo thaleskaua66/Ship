@@ -26,11 +26,13 @@ enum class TokenType {
   // Keywords
   Yarr,
   Grrr,
+  Map,
 };
 
 inline std::map<std::string, TokenType> keywords = {
   {"yarr", TokenType::Yarr},
   {"grrr", TokenType::Grrr},
+  {"map", TokenType::Map},
 };
 
 struct Token {
@@ -73,7 +75,26 @@ inline std::vector<Token> tokenize(std::string sourceCode){
 
           i++; // To enter in the string
           while(i < sourceCode.length() && sourceCode[i] != '"'){
-            str += sourceCode[i++];
+            if(sourceCode[i] == '\\'){
+              i++;
+              char next = sourceCode[i];
+
+              switch(next){
+                case 'n': str += '\n'; break;
+                case 't': str += '\t'; break;
+                case '\\': str += '\\'; break;
+                case '"': str += '\"'; break;
+                case 'r': str += '\r'; break;
+                case '0': str += '\0'; break;
+                default:
+                  std::cerr << "Invalid escape sequence: \\" << next << std::endl;
+                  exit(1);
+              }
+
+              i++;
+            } else {
+              str += sourceCode[i++];
+            }
           }
 
           if(i >= sourceCode.length() || sourceCode[i] != '"'){

@@ -85,6 +85,10 @@ inline std::shared_ptr<RuntimeVal> evaluate(std::shared_ptr<Statement> astNode, 
     case NodeType::VarDeclaration: {
       return evaluate_var_declaration(astNode, environment);
     }
+    // HANDLE FUNCTION DECLARATIONS
+    case NodeType::FunctionDeclaration: {
+      return evaluate_function_declaration(astNode, environment);
+    }
 
     default: {
       std::cout << astNode;

@@ -61,9 +61,51 @@ class Parser {
         case TokenType::Grrr: {
           return this->parse_var_declaration();
         }
+        case TokenType::Map: {
+          return this->parse_function_declaration();
+        }
         default:
-          return this->parse_expr();
+          return this->parse_statement_expr();
       }
+    }
+
+    // Parsing function declarations
+    std::shared_ptr<Statement> parse_function_declaration(){
+      advance(); // eat Map keyword
+      Token name = expect(TokenType::Identifier, "Expected function name following map keyword.");
+      auto args = this->parse_args();
+      std::vector<std::string> params;
+      for(std::shared_ptr<Expr> arg : args){
+        if(arg->kind() != NodeType::Identifier){
+          throw std::runtime_error("Parameter should be string type inside function declaration.");
+          exit(1);
+        }
+
+        std::shared_ptr<Identifier> id = std::dynamic_pointer_cast<Identifier>(arg);
+        if(!id){
+          throw std::runtime_error("Parameter is not an identifier.");
+          exit(1);
+        }
+
+        params.push_back(id->symbol);
+      }
+
+      expect(TokenType::OpenBrace, "Expected opening brace for function declaration.");
+      std::vector<std::shared_ptr<Statement>> body;
+
+      while(at().type != TokenType::eof && at().type != TokenType::CloseBrace){
+        body.push_back(this->parseStatement());
+      }
+
+      expect(TokenType::CloseBrace, "Expected closing brace in function end.");
+      return std::make_shared<FunctionDeclaration>(params, name.value, body);
+    }
+
+    // We always want semicolons to keep the language consistent and not strange
+    std::shared_ptr<Statement> parse_statement_expr(){
+      auto expr = this->parse_expr();
+      this->expect(TokenType::Semicolon, "Expected ';' after expression.");
+      return expr;
     }
 
     std::shared_ptr<Statement> parse_var_declaration(){

@@ -90,4 +90,8 @@ inline void setupScope(std::shared_ptr<Environment>& scope){
   // Built-in functions (all declared in nativeMaps.h)
   scope->declareVar("yell", std::make_shared<NativeFunctionVal>(yell), true);
   scope->declareVar("scream", std::make_shared<NativeFunctionVal>(scream), true);
+  scope->declareVar("hail", std::make_shared<NativeFunctionVal>(hail), true);
+  scope->declareVar("toNum", std::make_shared<NativeFunctionVal>(toNum), true);
+  scope->declareVar("toStr", std::make_shared<NativeFunctionVal>(toStr), true);
+  scope->declareVar("walkThePlank", std::make_shared<NativeFunctionVal>(walkThePlank), true);
 }

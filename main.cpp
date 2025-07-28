@@ -11,7 +11,7 @@ int main(int argc, char* argv[]) {
   auto env = Environment::createGlobal();
 
   // Printing a version cause it looks nice
-  std::cout << "Ship0.0.2" << std::endl;
+  std::cout << "Ship v1.0.0" << std::endl;
   if(argc < 2){
     while(true){
       std::string input;

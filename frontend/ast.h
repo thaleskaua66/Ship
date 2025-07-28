@@ -8,6 +8,7 @@ enum class NodeType {
   // STATEMENTS
   Program,
   VarDeclaration,
+  FunctionDeclaration,
 
   // EXPRESSIONS
   AssignmentExpr,
@@ -53,6 +54,20 @@ struct VariableDeclaration : public Statement {
 
   NodeType kind() const override {
     return NodeType::VarDeclaration;
+  }
+};
+
+// Getting functions
+struct FunctionDeclaration : public Statement {
+  std::vector<std::string> parameters;
+  std::string name;
+  std::vector<std::shared_ptr<Statement>> body;
+
+  FunctionDeclaration(std::vector<std::string> params, std::string nm, std::vector<std::shared_ptr<Statement>> bd)
+    : parameters(params), name(nm), body(bd) {}
+
+  NodeType kind() const override {
+    return NodeType::FunctionDeclaration;
   }
 };
 
