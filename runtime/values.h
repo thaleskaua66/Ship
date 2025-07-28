@@ -1,15 +1,23 @@
 #pragma once
+#include <functional>
 #include <iostream>
 #include <memory>
 #include <string>
 #include <unordered_map>
+#include <vector>
+
+
+// Because can't include environment.h
+class Environment;
 
 // Defining the value types hell yeah
 enum class ValueType {
   NULLVAL,
   NUMBER,
   BOOLEAN,
+  STRING,
   OBJECT,
+  NATIVEFUNCTION,
 };
 
 // Polimorphism to all the values (NULLVAL, NUMBER, etc)
@@ -41,6 +49,18 @@ struct NumberVal : RuntimeVal {
   }
 };
 
+// STRINGS
+struct StringVal : RuntimeVal {
+  std::string value;
+
+  StringVal(std::string v)
+  : RuntimeVal(ValueType::STRING), value(v) {}
+
+  std::string toString() const override {
+    return value;
+  }
+};
+
 // BOOLEANS
 struct BoolVal : RuntimeVal {
   bool value = true;
@@ -59,5 +79,21 @@ struct ObjectVal : RuntimeVal {
 
   std::string toString() const override {
     return "[object]";
+  }
+};
+
+using FunctionCall = std::function<std::shared_ptr<RuntimeVal>(
+  const std::vector<std::shared_ptr<RuntimeVal>>& args,
+  std::shared_ptr<Environment> env
+)>;
+
+struct NativeFunctionVal : RuntimeVal {
+  FunctionCall call;
+
+  NativeFunctionVal(FunctionCall fn)
+    : RuntimeVal(ValueType::NATIVEFUNCTION), call(fn) {}
+    
+  std::string toString() const override {
+    return "native-fn";
   }
 };

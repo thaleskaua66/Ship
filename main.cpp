@@ -27,7 +27,6 @@ int main(int argc, char* argv[]) {
 
       // Yes it's running the program that the user sent
       auto result = evaluate(program, env);
-      std::cout << result->toString() << '\n' << std::endl;
     }
   } else {
     std::ifstream file;
@@ -44,10 +43,7 @@ int main(int argc, char* argv[]) {
     file.close();
 
     auto program = parser.produceAST(content);
-    std::cout << program << std::endl; // Will send the memory address if the program run succesfully
-    // "Why don't you print the ast"? Cause i'm too lazy to create a function for that
     auto result = evaluate(program, env);
-
   }
 
   return 0;

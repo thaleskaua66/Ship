@@ -105,14 +105,14 @@ class Parser {
     }
 
     std::shared_ptr<Expr> parse_object_expr(){
-      if(at().type != TokenType::OpenBracket){
+      if(at().type != TokenType::OpenBrace){
         return this->parse_additive_expr();
       }
 
       advance();
       std::vector<Property> properties;
 
-      while(this->not_eof() && at().type != TokenType::CloseBracket){
+      while(this->not_eof() && at().type != TokenType::CloseBrace){
         auto key = expect(TokenType::Identifier, "Object literal key expected.").value;
 
         if(at().type == TokenType::Comma){
@@ -120,7 +120,7 @@ class Parser {
           properties.push_back(Property{ key });
           continue;
         }
-        else if(at().type == TokenType::CloseBracket){
+        else if(at().type == TokenType::CloseBrace){
           properties.push_back(Property{ key });
           continue;
         }
@@ -130,12 +130,12 @@ class Parser {
         std::shared_ptr<Expr> value = parse_expr();
         properties.push_back(Property{key, value});
 
-        if(at().type != TokenType::CloseBracket){
+        if(at().type != TokenType::CloseBrace){
           expect(TokenType::Comma, "Expected comma or closing brace.");
         }
       }
 
-      expect(TokenType::CloseBracket, "Object literal missing closing brace.");
+      expect(TokenType::CloseBrace, "Object literal missing closing brace.");
       return std::make_shared<ObjectLiteral>(properties);
     }
 
@@ -157,11 +157,11 @@ class Parser {
     }
 
     std::shared_ptr<Expr> parse_multiplicative_expr(){
-      std::shared_ptr<Expr> left = this->parse_primary_expr();
+      std::shared_ptr<Expr> left = this->parse_call_member_expr();
 
       while(this->at().value == "*" || this->at().value == "/" || this->at().value == "%"){
         std::string op = this->advance().value;
-        std::shared_ptr<Expr> right = this->parse_primary_expr();
+        std::shared_ptr<Expr> right = this->parse_call_member_expr();
         auto binop = std::make_shared<BinaryExpr>();
         binop->left = left;
         binop->right = right;
@@ -171,6 +171,76 @@ class Parser {
       }
 
       return left;
+    }
+
+    std::shared_ptr<Expr> parse_call_member_expr(){
+      std::shared_ptr<Expr> member = this->parse_member_expr();
+
+      if(at().type == TokenType::OpenParen){
+        return this->parse_call_expr(member);
+      }
+
+      return member;
+    }
+
+    std::shared_ptr<Expr> parse_call_expr(std::shared_ptr<Expr> calle){
+      std::shared_ptr<Expr> call_expr = std::make_shared<CallExpr>(calle, this->parse_args());
+
+      if(at().type == TokenType::OpenParen){
+        call_expr = this->parse_call_expr(call_expr);
+      }
+
+      return call_expr;
+    }
+
+    std::vector<std::shared_ptr<Expr>> parse_args(){
+      expect(TokenType::OpenParen, "Expected open parenthesis.");
+      auto args = at().type == TokenType::CloseParen ? std::vector<std::shared_ptr<Expr>>{} : this->parse_args_list();
+
+      expect(TokenType::CloseParen, "Missing closing parenthesis inside argument list.");
+      return args;
+    }
+
+    std::vector<std::shared_ptr<Expr>> parse_args_list(){
+      std::vector<std::shared_ptr<Expr>> args;
+      args.push_back(this->parse_assignment_expr());
+
+      while(this->at().type == TokenType::Comma){
+        advance();
+        args.push_back(this->parse_assignment_expr());
+      }
+
+      return args;
+    }
+
+    std::shared_ptr<Expr> parse_member_expr(){
+      std::shared_ptr<Expr> object = this->parse_primary_expr();
+
+      while(at().type == TokenType::Dot || at().type == TokenType::OpenBracket){
+        Token op = advance();
+        std::shared_ptr<Expr> property;
+        bool computed;
+
+        // non-computed value (obj.expr)
+        if(op.type == TokenType::Dot){
+          computed = false;
+          // Getting identifier as property
+          property = this->parse_primary_expr();
+
+          if(property->kind() != NodeType::Identifier){
+            throw std::runtime_error("Cannot use dot operator without right hand side being a identifier.");
+            // exit(1);
+          }
+        } else { // This allows chaining hell yarr!
+          computed = true;
+          property = this->parse_expr();
+          expect(TokenType::CloseBracket, "Missing closing bracket in computed value.");
+        }
+
+        object = std::make_shared<MemberExpr>(object, property, computed);
+      }
+
+      return object;
     }
 
     std::shared_ptr<Expr> parse_primary_expr(){
@@ -183,6 +253,12 @@ class Parser {
           auto id = std::make_shared<Identifier>();
           id->symbol = tk.value;
           return id;
+        }
+        case TokenType::String: {
+          advance();
+          auto string = std::make_shared<StringLiteral>(tk.value);
+          string->value = tk.value;
+          return string;
         }
         case TokenType::Number: {
           advance();

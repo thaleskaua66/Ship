@@ -6,11 +6,14 @@
 #include <vector>
 #include <algorithm>
 #include "values.h"
+#include "nativeMaps.h"
 
+// Defining things
 class Environment;
-
 inline void setupScope(std::shared_ptr<Environment>& scope);
+struct RuntimeVal;
 
+// Environment obj
 class Environment : public std::enable_shared_from_this<Environment> {
   private:
     std::shared_ptr<Environment> parent;
@@ -79,7 +82,12 @@ class Environment : public std::enable_shared_from_this<Environment> {
 
 // Setting global scope
 inline void setupScope(std::shared_ptr<Environment>& scope){
+  // Built-in variables
   scope->declareVar("true", std::make_shared<BoolVal>(true), true);
   scope->declareVar("false", std::make_shared<BoolVal>(false), true);
   scope->declareVar("null", std::make_shared<NullVal>(), true);
+
+  // Built-in functions (all declared in nativeMaps.h)
+  scope->declareVar("yell", std::make_shared<NativeFunctionVal>(yell), true);
+  scope->declareVar("scream", std::make_shared<NativeFunctionVal>(scream), true);
 }

@@ -11,9 +11,12 @@ enum class NodeType {
 
   // EXPRESSIONS
   AssignmentExpr,
+  MemberExpr,
+  CallExpr,
 
   // LITERALS
   Property,
+  StringLiteral,
   ObjectLiteral,
   NumericLiteral,
   Identifier,
@@ -78,6 +81,33 @@ struct BinaryExpr : public Expr {
   std::string op;
 };
 
+// Getting Call Expressions
+struct CallExpr : public Expr {
+  NodeType kind() const override {
+    return NodeType::CallExpr;
+  }
+
+  std::vector<std::shared_ptr<Expr>> args;
+  std::shared_ptr<Expr> calle;
+
+  CallExpr(std::shared_ptr<Expr> caller, std::vector<std::shared_ptr<Expr>> arg)
+    : args(arg), calle(caller) {}
+};
+
+// Getting Member Expressions
+struct MemberExpr : public Expr {
+  NodeType kind() const override {
+    return NodeType::MemberExpr;
+  }
+
+  std::shared_ptr<Expr> object;
+  std::shared_ptr<Expr> property;
+  bool computed;
+
+  MemberExpr(std::shared_ptr<Expr> obj, std::shared_ptr<Expr> prop, bool comp)
+    : object(obj), property(prop), computed(comp) {}
+};
+
 // Getting identifiers
 struct Identifier : public Expr {
   NodeType kind() const override {
@@ -98,6 +128,17 @@ struct NumericLiteral : public Expr {
   NumericLiteral(double v) : value(v) {}
 };
 
+struct StringLiteral : public Expr {
+  NodeType kind() const override {
+    return NodeType::StringLiteral;
+  }
+
+  std::string value;
+
+  StringLiteral(std::string v) : value(v) {}
+};
+
+// Property hehee
 struct Property : public Expr {
   NodeType kind() const override {
     return NodeType::Property;

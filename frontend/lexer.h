@@ -14,10 +14,12 @@ enum class TokenType {
 
   // Grouping & operators
   Equals,
-  Comma, Colon,
+  Comma, Colon, Dot,
   Semicolon,
   OpenParen, CloseParen, // ()
-  OpenBracket, CloseBracket, // {}
+  OpenBrace, CloseBrace, // {}
+  OpenBracket, CloseBracket, // []
+  String, // ""
   BinaryOperator,
   eof, // end of file 
 
@@ -48,8 +50,10 @@ inline std::vector<Token> tokenize(std::string sourceCode){
     switch(current){
       case '(': tokens.push_back({"(", TokenType::OpenParen}); continue;
       case ')': tokens.push_back({")", TokenType::CloseParen}); continue;
-      case '{': tokens.push_back({"{", TokenType::OpenBracket}); continue;
-      case '}': tokens.push_back({"}", TokenType::CloseBracket}); continue;
+      case '{': tokens.push_back({"{", TokenType::OpenBrace}); continue;
+      case '}': tokens.push_back({"}", TokenType::CloseBrace}); continue;
+      case '[': tokens.push_back({"[", TokenType::OpenBracket}); continue;
+      case ']': tokens.push_back({"]", TokenType::CloseBracket}); continue;
       case '+':
       case '-':
       case '/':
@@ -61,9 +65,26 @@ inline std::vector<Token> tokenize(std::string sourceCode){
       case ';': tokens.push_back({";", TokenType::Semicolon}); continue;
       case ':': tokens.push_back({":", TokenType::Colon}); continue;
       case ',': tokens.push_back({",", TokenType::Comma}); continue;
+      case '.': tokens.push_back({".", TokenType::Dot}); continue;
       // HANDLING MULTICHAR TOKENS IN LIGHTNING SPEED
       default:
-        if(isdigit(current) || sourceCode[i] == '.'){
+        if(sourceCode[i] == '"'){
+          std::string str = "";
+
+          i++; // To enter in the string
+          while(i < sourceCode.length() && sourceCode[i] != '"'){
+            str += sourceCode[i++];
+          }
+
+          if(i >= sourceCode.length() || sourceCode[i] != '"'){
+            std::cerr << "Lexer Error: Unterminated string literal.\n";
+            exit(1);
+          }
+
+          tokens.push_back({str, TokenType::String});
+          continue;
+        }
+        else if(isdigit(current) || sourceCode[i] == '.'){
           std::string number;
           bool hasDot;
 

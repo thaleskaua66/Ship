@@ -23,6 +23,15 @@ inline std::shared_ptr<RuntimeVal> evaluate(std::shared_ptr<Statement> astNode, 
 
       return last;
     }
+    // HANDLING STRINGS
+    case NodeType::StringLiteral: {
+      auto string = std::dynamic_pointer_cast<StringLiteral>(astNode);
+      if(!string) {
+        throw std::runtime_error("Error: Node isn't a valid StringLiteral.");
+      }
+
+      return std::make_shared<StringVal>(string->value);
+    }
     // HANDLING NUMERALS
     case NodeType::NumericLiteral: {
       auto num = std::dynamic_pointer_cast<NumericLiteral>(astNode);
@@ -49,6 +58,15 @@ inline std::shared_ptr<RuntimeVal> evaluate(std::shared_ptr<Statement> astNode, 
       }
 
       return evaluate_objects_expr(obj, environment);
+    }
+    // HANDLING CALLS
+    case NodeType::CallExpr: {
+      auto obj = std::dynamic_pointer_cast<CallExpr>(astNode);
+      if(!obj){
+        throw std::runtime_error("Error: Node isn't a valid ObjectLiteral.");
+      }
+
+      return evaluate_call_expr(obj, environment);
     }
     // HANDLING ASSIGNMENTS
     case NodeType::AssignmentExpr: {

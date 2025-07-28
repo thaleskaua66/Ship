@@ -70,6 +70,26 @@ inline std::shared_ptr<RuntimeVal> evaluate_objects_expr(std::shared_ptr<ObjectL
   return object;
 }
 
+// 
+inline std::shared_ptr<RuntimeVal> evaluate_call_expr(std::shared_ptr<CallExpr> expr, std::shared_ptr<Environment> env){
+  std::vector<std::shared_ptr<RuntimeVal>> args;
+  for(auto& arg : expr->args){
+    args.push_back(evaluate(arg, env));
+  }
+
+  auto fn = evaluate(expr->calle, env);
+
+  if(fn->type != ValueType::NATIVEFUNCTION){
+    throw std::runtime_error("Cannot call value that is not a function.");
+    exit(1);
+  }
+
+  auto fnVal = std::static_pointer_cast<NativeFunctionVal>(fn);
+  auto result = fnVal->call(args, env);
+
+  return result;
+}
+
 // Evaluating assignments
 inline std::shared_ptr<RuntimeVal> evaluate_assignment(std::shared_ptr<AssignmentExpr> node, std::shared_ptr<Environment> env){
   if(node->assigne->kind() != NodeType::Identifier){
